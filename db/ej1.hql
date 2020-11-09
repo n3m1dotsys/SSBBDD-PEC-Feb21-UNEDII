@@ -17,11 +17,11 @@ CREATE EXTERNAL TABLE IF NOT EXISTS datasets
 (
     title STRING,
     author_id INT,
-    bestsellers_rank INT,
+    bestsellers-rank INT,
     imprint BINARY,
-    publication_date TIMESTAMP,
-    rating_avg DOUBLE,
-    rating_count INT
+    publication-date TIMESTAMP,
+    rating-avg DOUBLE,
+    rating-count INT
 )
-COMMENT 'Tabla de libros'
+COMMENT 'Tabla de libros';
 
