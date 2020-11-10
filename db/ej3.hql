@@ -11,4 +11,4 @@ CREATE VIEW IF NOT EXISTS vista_libros
 )
 AS SELECT title, author_name, publication_date, rating_avg
 FROM authors, datasets
-WHERE authors.author_id == datasets.author_id;
+WHERE authors.author_id = datasets.author_id;
