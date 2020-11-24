@@ -2,6 +2,6 @@
 
 USE librosdb;
 
-LOAD DATA INPATH '/user/cloudera/librosdb/authors.csv' INTO TABLE authors;
+LOAD DATA INPATH '/user/cloudera/librosdb/authors/authors.csv' INTO TABLE authors;
 
-LOAD DATA INPATH '/user/cloudera/librosdb/dataset.csv' INTO TABLE datasets;
+LOAD DATA INPATH '/user/cloudera/librosdb/dataset/dataset.csv' INTO TABLE dataset;

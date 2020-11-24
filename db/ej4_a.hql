@@ -3,9 +3,9 @@
 USE librosdb;
 
 SELECT title
-FROM datasets LEFT SEMI JOIN (
+FROM dataset LEFT SEMI JOIN (
     SELECT min(bestsellers_rank) AS bestseller
-    FROM datasets
+    FROM dataset
 ) AS a 
 ON bestsellers_rank = a.bestseller
 LIMIT 1;

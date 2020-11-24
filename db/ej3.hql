@@ -10,5 +10,5 @@ CREATE VIEW IF NOT EXISTS vista_libros
     rating_avg COMMENT 'Valoración media del libro'
 )
 AS SELECT title, author_name, publication_date, rating_avg
-FROM authors, datasets
-WHERE authors.author_id = datasets.author_id;
+FROM authors, dataset
+WHERE authors.author_id = dataset.author_id;
