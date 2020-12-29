@@ -14,9 +14,9 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\;'
 tblproperties("skip.header.line.count"="1"); 
 
--- Tabla datasets
+-- Tabla dataset
 
-CREATE EXTERNAL TABLE IF NOT EXISTS datasets
+CREATE EXTERNAL TABLE IF NOT EXISTS dataset
 (
     title STRING,
     author_id INT,
