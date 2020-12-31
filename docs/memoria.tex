@@ -1,0 +1,132 @@
+% !TeX spellcheck = es_es
+\documentclass{article}
+
+\usepackage[ansinew]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{afterpage}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage[backend=bibtex,style=alphabetic-verb]{biblatex}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
+\addbibresource{memoria}
+
+\newcommand\blankpage{%
+	\null
+	\thispagestyle{empty}%
+	\addtocounter{page}{-1}%
+	\newpage
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Martí­n Romera Sobrado}
+\chead{Sistemas de Bases de Datos}
+\lhead{PEC Febrero 2021}
+
+\begin{document}
+	
+	\begin{titlepage}
+		\centering
+		\vspace*{1cm}
+		
+		\Huge
+		\textbf{Sistemas de Bases de Datos}\\
+		\textbf{2021}
+		
+		\vspace{0.5cm}
+		\LARGE
+		Centro Asociado de la UNED en Bizkaia\\
+		\vspace{1.5cm}
+		
+		\textbf{Martín Romera Sobrado}\\
+		\textbf{Bilbao}
+		
+		\vfill
+		
+		\vspace{0.8cm}
+		\Large
+		\today
+	\end{titlepage}
+	
+	\blankpage
+	
+	\section{Introducción}
+	
+		El objetivo de la práctica es realizar una serie de tareas sobre una base de datos de libros importada de los archivos \texttt{authors.csv} y \texttt{datasets.csv} utilizando el entorno de Hadoop.\\
+		
+		De las opciones que se ofrecían en el enunciado para resolver los ejercicios, mi desarrollo ha sido utilizando la \textbf{maquina virtual de cloudera}.\\
+		
+		Con la entrega de mi práctica adjunto el notebook de jupyter tal y como se pide en los requerimientos, esta memoria explicando brevemente el desarrollo de la práctica y conclusiones de este, el código fuente de los \textit{scripts} utilizados en el desarrollo (aunque se incluyan dentro del notebook en forma de comentarios), en forma de repositorio de git con los cambios que he realizado a lo largo del desarrollo registrados.
+		
+	\section{Desarrollo}
+		
+		\subsection{Preparación del entorno}
+		
+			La preparación del entorno es un paso muy simple, ya que solo consiste en crear un directorio en el sistema de ficheros de hadoop para guardar todos los archivos relacionados con la base de datos, e inicializar la base de datos haciendo uso del fichero \texttt{db.hql} dentro del directorio \texttt{db/}.
+			
+		\subsection{Ejercicio 1}
+		
+			En este ejercicio creamos las dos tablas necesarias para el resto de ejercicios: \texttt{authors} y \texttt{dataset}. Las tablas serán externas ya que pretendemos diseñar en un futuro unas función externa (el mapper del ejercicio 5) que interactue con los datos de esta.
+			
+		\subsection{Ejercicio 2}
+		
+			En este ejercicio importamos los datos de \texttt{authors.csv} y \texttt{datasets.csv} en las tablas que acabamos de crear. Para ello primero se meten ambos archivos dentro del sistema de ficheros de hadoop, y haciendo uso del script \texttt{ej2.hql} importamos los datos en ambas tamblas.
+			
+		\subsection{Ejercicio 3}
+		
+			Para este ejercicio tenemos que crear una vista combinando datos de ambas tablas. La orden para hacer esto es muty similar a como serían usando SQL. Esta se recoge en el script \texttt{ej3.hql} dentro del directorio \texttt{db/}.
+			
+		\subsection{Ejercicio 4}
+		
+			Este ejercicio consiste en realizar operaciones dentro de la base de datos utilizando el propio lenguaje de consultas de Hadoop, \textit{HiveQL}. Se divide en tres apartados:
+			
+			\begin{itemize}
+				\item[a)] Encontrar el título del libro más alto en el ranking de bestsellers.
+				\item[b)] Encontrar el título del libro con mejor valoración de Ana María Spagna.
+				\item[c)] Encontrar los 5 autores que han escrito más libros.
+			\end{itemize}
+			
+			El mayor problema que puede haber en el desarrollo de estos ejercicios es los empates que puede haber a la hora de resolver la consulta.\\
+			
+			En el apartado \textit{a} no ocurre esto ya que al ser un ranking, suponemos que todos los libros (en el ranking) tienen un valor único.\\
+			
+			En el apartado \textit{b} para evitar que la consulta de 2 resultados, la he basado en ordenar los libros de la autora según su valoración, y mostrar el que está el inicio de de la tabla resultante de la ordenación con \texttt{LIMIT 1}.\\
+			
+			En el apartado \textit{c} de hago de forma similar al apartado \textit{b}, ordeno a los autores según el número de libros que han escrito y muestro el ``Top 5'' con \texttt{LIMIT 5}.
+			
+		\subsection{Ejercicio 5}
+		
+			Finalmente, para este ejercicio hay que implementar las funciones \texttt{map} y \texttt{reduce} para resolver el apartado \textit{a} del ejercicico anterior. De este ejercicio tengo más que hablar, ya que ha estado dandome errores durante casi un mes y medio, y no era capaz de encontrar el problema. Mi problema estaba en que no estaba considerando que hadoop, guardaba los ficheros \textit{csv} partidos en diferentes racks. Esto daba error en mi implementación del \textit{mapper} porque tenía un sistema para ``autoencontrar'' (para permitir que el programa funcionara para casos más generales) las columnas que necesitaba para sus operaciones de la siguiente manera:
+			
+			\begin{minted}{python}
+if first_line:
+	# Buscamos en que columna se encuentran los datos de title y bestseller-rank
+	column_count = 0
+	for column in line:
+		if column == "title":
+			title = column_count
+		if column == "bestsellers-rank":
+			rank = column_count
+		column_count += 1
+		if title == -1 or rank == -1:
+			raise Exception("title or rank column not found")
+	first_line = False
+			\end{minted}
+			
+			Este condicional se ejecutaba con la primera linea de cada \textit{csv} que recibía como entrada, y al no encontrar ninguna columna que se llamara o ``title'' o ``bestsellers-rank'', hacía saltar el error de la linea \mintinline{python}{raise Exception("title or rank column not found")}.\\
+			
+			Este error, aunque era un error bastante básico, me ha sido dificil encontrarlo, ya que al dirigirme al panel de \textit{Hue}, y observaba el trabajo fallido del mapreduce, si buscaba la salida estándar de errores (\texttt{stderr}), esta no se mostraba por hacerle falta la activación del componente log4j (supongo que un error de esa compilación de Hadoop).\\
+			
+			Al final encuentro el problema al ver que en el trabajo se realizan dos ``map''s, uno exitoso y el otro fallido. De lo que deduzco que Hadoop ha dividido el csv en 2 archivos, con uno de ellos sin la cabecera.
+			
+			El problema lo resuelvo en el commit \texttt{45be2d} del git local, por si se quiere analizar el cambio.\\
+			
+			Por lo demás he utilizado el patrón ``Top Ten'' de \autocite{mapreducepatters}, solo que adaptado para que en vez de ser un top 10, sea un top 1.\\
+					
+	\printbibliography
+			
+\end{document}
